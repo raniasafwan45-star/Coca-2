@@ -1288,15 +1288,24 @@ var loginInput = '';
 var loginLocked = false;
 var loginAttempts = 0;
 
-// check saved session
+// always show login on fresh load
+// (session cleared when browser closes)
 (function(){
   try{
     var s=sessionStorage.getItem('loggedIn');
     if(s==='1'){
+      // only skip login if same session (tab still open)
       document.getElementById('login').className='screen left';
       document.getElementById('home').className='screen active';
+    } else {
+      // force login screen
+      document.getElementById('login').className='screen active';
+      document.getElementById('home').className='screen right';
     }
-  }catch(e){}
+  }catch(e){
+    document.getElementById('login').className='screen active';
+    document.getElementById('home').className='screen right';
+  }
 })();
 
 function loginKey(n){
