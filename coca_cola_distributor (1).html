@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#E4002B">
+<title>Coca-Cola Distributor</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyAN3iF7qxSKGZQhig-to4F71wyuLCJjzpE",
+  authDomain:"apk-distributeur.firebaseapp.com",
+  projectId:"apk-distributeur",
+  storageBucket:"apk-distributeur.firebasestorage.app",
+  messagingSenderId:"573304599738",
+  appId:"1:573304599738:web:206105e31ceb44cf497e83"
+});
+var DB=firebase.firestore();
+function dbCol(n){return DB.collection(n);}
+function dbAdd(c,d){return c.add(d);}
+function dbGet(q){return q.get();}
+function dbWhere(c,f,op,v){return c.where(f,op,v);}
+function dbTS(){return firebase.firestore.FieldValue.serverTimestamp();}
+</script>
+<style>
+/* ══════════════════════════════
+   CSS VARIABLES — LIGHT & DARK
+══════════════════════════════ */
+:root{
+  --bg:#f5f5f5; --bg2:#fff; --bg3:#f0f0f0;
+  --card:#fff; --card2:#f8f8f8;
+  --border:#eee; --border2:#e0e0e0;
+  --text:#111; --text2:#444; --text3:#888;
+  --input-bg:#f8f8f8; --input-border:#eee;
+  --sheet:#fff; --sheet-handle:rgba(0,0,0,.1);
+  --distrib-bg:#f5f5f5;
+  --sec-line:rgba(228,0,43,.15);
+  --code-border:rgba(228,0,43,.28);
+  --code-bg:#fff8f8;
+  /* dark distrib */
+  --dbg:#0d0d0d; --dbg2:#1a1a1a; --dbg3:#111;
+  --dtext:#ddd; --dtext2:#888; --dtext3:#444;
+  --dborder:#222; --dborder2:#2a2a2a;
+}
+[data-theme="dark"]{
+  --bg:#0f0000; --bg2:#180003; --bg3:#120002;
+  --card:#180003; --card2:#1e0004;
+  --border:#360010; --border2:#2a000a;
+  --text:#f0f0f0; --text2:#ccc; --text3:#666;
+  --input-bg:#1e0004; --input-border:#360010;
+  --sheet:#130000; --sheet-handle:rgba(255,255,255,.1);
+  --distrib-bg:#0e0000;
+  --sec-line:rgba(228,0,43,.2);
+  --code-border:rgba(255,51,85,.35);
+  --code-bg:#200005;
+}
+
+/* ══════════════════════════════
+   RESET & BASE
+══════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{
+  width:100%;height:100%;
+  font-family:'Cairo',sans-serif;
+  background:#0a0a0a;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ══════════════════════════════
+   ROUTER
+══════════════════════════════ */
+.screen{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;
+  transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s;
+  will-change:transform;overflow:hidden;
+}
+.screen.active {transform:translateX(0);   opacity:1;pointer-events:all;z-index:10;}
+.screen.left   {transform:translateX(-100%);opacity:0;pointer-events:none;z-index:5;}
+.screen.right  {transform:translateX(100%); opacity:0;pointer-events:none;z-index:5;}
+.screen.below  {transform:translateY(100%); opacity:0;pointer-events:none;z-index:5;}
+
+/* ══════════════════════════════
+   COMMON HEADER
+══════════════════════════════ */
+.hdr{
+  flex-shrink:0;
+  background:linear-gradient(135deg,#E4002B 0%,#8a0012 100%);
+  display:flex;align-items:center;gap:12px;
+  padding:calc(env(safe-area-inset-top,16px) + 10px) 16px 12px;
+  position:relative;overflow:hidden;
+}
+.hdr::before{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.07);filter:blur(40px);top:-80px;right:-50px;pointer-events:none;}
+.hdr-back{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.18);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#fff;flex-shrink:0;backdrop-filter:blur(8px);}
+.hdr-back:active{background:rgba(255,255,255,.3);}
+.hdr-title{font-size:18px;font-weight:800;color:#fff;flex:1;}
+.hdr-logo{height:28px;filter:brightness(0) invert(1);display:block;}
+/* dark mode toggle in header */
+.dark-tog{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,.18);border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:18px;flex-shrink:0;
+  backdrop-filter:blur(8px);transition:background .2s;
+}
+.dark-tog:active{background:rgba(255,255,255,.3);}
+
+/* ══════════════════════════════
+   HOME
+══════════════════════════════ */
+#home{background:linear-gradient(160deg,#E4002B 0%,#9a0016 40%,#540008 100%);}
+[data-theme="dark"] #home{background:linear-gradient(160deg,#1e0005 0%,#0d0000 50%,#060606 100%);}
+
+.blobs{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.bl{position:absolute;border-radius:50%;filter:blur(70px);animation-timing-function:ease-in-out;animation-iteration-count:infinite;}
+.bl1{width:60vw;height:60vw;background:rgba(228,0,43,.38);top:-15vw;left:-15vw;animation:bm1 11s infinite;}
+.bl2{width:45vw;height:45vw;background:rgba(170,0,25,.28);top:20vw;right:-12vw;animation:bm2 13s infinite;}
+.bl3{width:35vw;height:35vw;background:rgba(255,40,60,.15);top:55vw;left:5vw;animation:bm3 8s infinite;}
+@keyframes bm1{0%,100%{transform:translate(0,0)}50%{transform:translate(3vw,2vw) scale(1.07)}}
+@keyframes bm2{0%,100%{transform:translate(0,0)}50%{transform:translate(-2vw,3vw)}}
+@keyframes bm3{0%,100%{transform:translate(0,0)}50%{transform:translate(1vw,-2vw) scale(1.1)}}
+.bubs{position:absolute;inset:0;pointer-events:none;}
+.bub{position:absolute;border-radius:50%;background:rgba(255,255,255,.14);animation:rise linear infinite;}
+@keyframes rise{0%{transform:translateY(0);opacity:.14}100%{transform:translateY(-80vh);opacity:0}}
+.sp{position:absolute;border-radius:50%;background:#fff;opacity:0;animation:spk ease-in-out infinite;}
+@keyframes spk{0%,100%{opacity:0;transform:scale(.4)}50%{opacity:.85;transform:scale(1.5)}}
+
+.home-status-bar{
+  height:calc(env(safe-area-inset-top,16px) + 30px);
+  display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 20px 8px;position:relative;z-index:10;flex-shrink:0;
+}
+.home-time{font-size:13px;font-weight:700;color:rgba(255,255,255,.92);}
+.home-icons{display:flex;gap:5px;align-items:center;font-size:12px;color:rgba(255,255,255,.85);}
+
+/* home dark toggle (in status bar area) */
+.home-dark-tog{
+  position:absolute;top:calc(env(safe-area-inset-top,16px) + 6px);
+  left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.15);
+  border:1.5px solid rgba(255,255,255,.25);
+  border-radius:60px;padding:5px 12px 5px 9px;
+  display:flex;align-items:center;gap:6px;
+  cursor:pointer;backdrop-filter:blur(14px);
+  z-index:20;user-select:none;transition:background .2s;
+}
+.home-dark-tog:active{background:rgba(255,255,255,.25);}
+.tog-track{width:34px;height:18px;background:rgba(255,255,255,.2);border-radius:20px;position:relative;transition:background .3s;}
+.tog-track.on{background:rgba(255,255,255,.44);}
+.tog-thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .28s cubic-bezier(.34,1.56,.64,1);}
+.tog-thumb.on{left:18px;}
+.tog-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.9);white-space:nowrap;}
+
+.home-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;position:relative;z-index:2;}
+.logo-card{
+  width:100%;max-width:420px;
+  background:rgba(255,255,255,.1);
+  border:1.5px solid rgba(255,255,255,.22);
+  border-radius:28px;padding:clamp(20px,5vw,36px);
+  text-align:center;backdrop-filter:blur(20px);
+  box-shadow:0 24px 56px rgba(0,0,0,.38),inset 0 1.5px 0 rgba(255,255,255,.2);
+  position:relative;overflow:hidden;
+  animation:cardIn .8s cubic-bezier(.34,1.56,.64,1) .1s both;
+}
+@keyframes cardIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.logo-card::before{content:'';position:absolute;top:-50%;left:-72%;width:50%;height:200%;background:linear-gradient(108deg,transparent 40%,rgba(255,255,255,.14) 50%,transparent 60%);animation:shine 6s ease-in-out infinite 1s;}
+@keyframes shine{0%{left:-72%}40%,100%{left:122%}}
+.logo-img{display:flex;justify-content:center;margin-bottom:5px;animation:lf 4s ease-in-out infinite;filter:drop-shadow(0 4px 18px rgba(0,0,0,.6)) drop-shadow(0 0 12px rgba(228,0,43,.4));}
+@keyframes lf{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.logo-img img{width:clamp(160px,50vw,240px);height:auto;filter:brightness(0) invert(1) drop-shadow(2px 3px 6px rgba(0,0,0,.45));}
+.logo-fb{font-family:Georgia,serif;font-size:clamp(36px,10vw,52px);font-weight:bold;font-style:italic;background:linear-gradient(135deg,#fff,#fff9c4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:none;}
+.wave{display:block;margin:4px auto 10px;}
+.divrow{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.divline{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);}
+.divstars{font-size:9px;color:rgba(255,255,255,.75);letter-spacing:5px;}
+.sub-tag{font-size:clamp(10px,3vw,12px);font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.84);}
+
+.home-btns{
+  width:100%;max-width:420px;
+  background:var(--sheet);
+  border-radius:32px 32px 0 0;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom,0px));
+  flex-shrink:0;
+  box-shadow:0 -10px 40px rgba(0,0,0,.15);
+  animation:slideUp .7s cubic-bezier(.34,1.1,.64,1) .2s both;
+  align-self:center;width:100%;
+  transition:background .3s;
+}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.hdl{width:36px;height:4px;border-radius:10px;background:var(--sheet-handle);margin:0 auto 18px;transition:background .3s;}
+.sec-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(228,0,43,.25),transparent);}
+.sec-txt{font-size:10px;font-weight:700;letter-spacing:3px;color:#E4002B;text-transform:uppercase;}
+.btn-red{
+  background:linear-gradient(135deg,#E4002B 0%,#b3001c 100%);
+  color:#fff;border:none;border-radius:16px;
+  width:100%;height:clamp(54px,14vw,62px);margin-bottom:12px;
+  font-family:'Cairo',sans-serif;font-size:clamp(15px,4vw,17px);font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+  box-shadow:0 7px 22px rgba(228,0,43,.42),inset 0 1px 0 rgba(255,255,255,.18);
+  position:relative;overflow:hidden;
+}
+.btn-red::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,.12),transparent 55%);pointer-events:none;}
+.btn-red:active{transform:scale(.97);}
+.btn-out{
+  background:transparent;color:#E4002B;border:2.5px solid #E4002B;
+  border-radius:16px;width:100%;height:clamp(54px,14vw,62px);
+  font-family:'Cairo',sans-serif;font-size:clamp(15px,4vw,17px);font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+  transition:background .2s;
+}
+.btn-out:active{background:rgba(228,0,43,.06);transform:scale(.97);}
+.ibx{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.btn-red .ibx{background:rgba(255,255,255,.2);}
+.btn-out .ibx{background:rgba(228,0,43,.1);}
+.spark-note{text-align:center;font-size:11px;font-weight:600;color:var(--text3);margin-top:10px;display:flex;align-items:center;justify-content:center;gap:5px;transition:color .3s;}
+.green-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0;}
+
+/* ══════════════════════════════
+   REGISTER
+══════════════════════════════ */
+#register{background:var(--bg);transition:background .3s;}
+.reg-scroll{flex:1;overflow-y:auto;padding:14px 16px calc(24px + env(safe-area-inset-bottom,0px));scrollbar-width:none;}
+.reg-scroll::-webkit-scrollbar{display:none;}
+.fcard{background:var(--card);border-radius:22px;padding:18px 16px;box-shadow:0 4px 24px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:12px;transition:background .3s,border .3s;}
+[data-theme="dark"] .fcard{box-shadow:0 4px 24px rgba(0,0,0,.38);}
+.fsec{display:flex;align-items:center;gap:8px;margin:16px 0 12px;}
+.fsec-line{flex:1;height:1px;background:var(--sec-line);transition:background .3s;}
+.fsec-lbl{font-size:10px;font-weight:700;letter-spacing:2px;color:#E4002B;text-transform:uppercase;white-space:nowrap;}
+.fg{margin-bottom:13px;}
+.flbl{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;display:flex;align-items:center;gap:5px;transition:color .3s;}
+.flbl em{font-size:14px;font-style:normal;}
+.req{display:inline-flex;align-items:center;background:linear-gradient(135deg,#E4002B,#b3001c);color:#fff;font-size:9px;font-weight:800;border-radius:20px;padding:2px 8px;margin-right:4px;}
+.opt{display:inline-flex;align-items:center;background:rgba(150,150,150,.1);color:var(--text3);font-size:9px;font-weight:700;border-radius:20px;padding:2px 8px;margin-right:4px;}
+.inp{
+  width:100%;background:var(--input-bg);border:2px solid var(--input-border);
+  border-radius:13px;padding:13px 15px;font-family:'Cairo',sans-serif;
+  font-size:clamp(14px,4vw,16px);font-weight:600;color:var(--text);
+  outline:none;transition:border .2s,box-shadow .2s,background .3s,color .3s;
+  -webkit-appearance:none;
+}
+.inp::placeholder{color:rgba(150,150,150,.55);font-weight:500;}
+.inp:focus{border-color:#E4002B;box-shadow:0 0 0 3px rgba(228,0,43,.09);}
+
+/* ── CODE INPUT — PROMINENT RED ── */
+.code-inp{
+  width:100%;
+  background:var(--code-bg);
+  border:2.5px solid var(--code-border);
+  border-radius:13px;padding:15px 16px;
+  font-family:'Cairo',sans-serif;
+  font-size:clamp(20px,6vw,26px);font-weight:900;
+  color:#E4002B;letter-spacing:3px;
+  outline:none;
+  transition:border .22s,box-shadow .22s,background .22s,color .22s;
+  -webkit-appearance:none;text-align:center;
+}
+.code-inp::placeholder{color:rgba(228,0,43,.3);font-weight:600;font-size:14px;letter-spacing:1px;}
+.code-inp:focus{
+  border-color:#E4002B;
+  box-shadow:0 0 0 5px rgba(228,0,43,.12);
+}
+/* GREEN STATE */
+.code-inp.green-state{
+  border-color:#22c55e !important;
+  color:#22c55e !important;
+  background:rgba(34,197,94,.07) !important;
+  box-shadow:0 0 0 5px rgba(34,197,94,.15) !important;
+}
+.code-inp.error{border-color:#ef4444;}
+
+.phwrap{position:relative;display:flex;align-items:center;}
+.phpre{position:absolute;right:14px;font-size:14px;font-weight:700;color:#E4002B;pointer-events:none;}
+.phwrap .inp{padding-right:54px;}
+textarea.inp{resize:none;min-height:70px;line-height:1.6;}
+.photo-up{width:100%;border:2px dashed rgba(228,0,43,.22);border-radius:13px;padding:16px;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:rgba(228,0,43,.03);position:relative;overflow:hidden;transition:background .2s;}
+.photo-up:active{background:rgba(228,0,43,.07);}
+.photo-up input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;}
+.pu-ico{font-size:28px;margin-bottom:4px;}
+.pu-lbl{font-size:13px;font-weight:700;color:var(--text3);}
+.pu-sub{font-size:10px;color:var(--text3);margin-top:2px;opacity:.7;}
+.photo-prev{width:100%;border-radius:12px;overflow:hidden;position:relative;display:none;}
+.photo-prev img{width:100%;height:140px;object-fit:cover;display:block;}
+.rm-ph{position:absolute;top:7px;left:7px;background:rgba(0,0,0,.58);color:#fff;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;}
+.locc{background:rgba(228,0,43,.04);border:1.5px solid rgba(228,0,43,.14);border-radius:14px;padding:13px 15px;display:flex;align-items:center;gap:12px;transition:border .28s,background .28s;}
+.locc.pulsing{border-color:rgba(228,0,43,.48);animation:lp 1.5s ease-in-out infinite;}
+.locc.done{border-color:#22c55e;background:rgba(34,197,94,.07);}
+@keyframes lp{0%,100%{box-shadow:0 0 0 0 rgba(228,0,43,.18)}50%{box-shadow:0 0 0 7px rgba(228,0,43,0)}}
+.locico{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,#E4002B,#b3001c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.locico.spin{animation:spin .9s linear infinite;}
+.locico.ok{background:linear-gradient(135deg,#16a34a,#148038);}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.locsub{font-size:11px;color:var(--text3);margin-top:2px;transition:color .3s;}
+.locsub.ok{color:#22c55e;font-weight:600;}
+.locsub.err{color:#ef4444;font-weight:600;}
+/* register dots */
+.rdot{
+  width:12px;height:12px;border-radius:50%;
+  background:#E4002B;border:2px solid rgba(228,0,43,.4);
+  transition:background .2s,transform .2s,border-color .2s;
+  flex-shrink:0;
+}
+.rdot.filled{background:#E4002B;border-color:#E4002B;transform:scale(1.15);}
+.rdot.green{background:#22c55e;border-color:#22c55e;transform:scale(1.2);animation:dotPop .3s ease;}
+@keyframes dotPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1.2)}}
+/* update location button */
+.update-loc-btn{
+  width:100%;height:44px;margin-top:8px;
+  background:transparent;
+  border:2px solid #22c55e;
+  border-radius:12px;
+  font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;
+  color:#22c55e;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .2s,transform .12s;
+}
+.update-loc-btn:active{background:rgba(34,197,94,.1);transform:scale(.97);}
+.update-loc-btn.loading{opacity:.6;cursor:not-allowed;}
+.reg-btn{
+  width:100%;height:clamp(54px,14vw,62px);
+  background:linear-gradient(135deg,#E4002B 0%,#b3001c 100%);
+  color:#fff;border:none;border-radius:16px;
+  font-family:'Cairo',sans-serif;font-size:clamp(15px,4vw,17px);font-weight:800;
+  display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+  box-shadow:0 9px 28px rgba(228,0,43,.42),inset 0 1.5px 0 rgba(255,255,255,.18);
+  position:relative;overflow:hidden;
+}
+.reg-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,.12),transparent 55%);pointer-events:none;}
+.reg-btn:active{transform:scale(.97);}
+.reg-btn:disabled{opacity:.5;cursor:not-allowed;}
+.spinw{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.32);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:none;}
+.sov{position:absolute;inset:0;background:linear-gradient(155deg,#E4002B 0%,#7d0011 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;opacity:0;pointer-events:none;transition:opacity .38s;padding:clamp(20px,5vw,36px);}
+.sov.show{opacity:1;pointer-events:all;}
+.sov-sc{width:clamp(70px,20vw,90px);height:clamp(70px,20vw,90px);border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:clamp(36px,10vw,44px);margin-bottom:16px;}
+.sov h2{font-size:clamp(20px,5vw,24px);font-weight:900;color:#fff;margin-bottom:4px;}
+.sov p{font-size:13px;color:rgba(255,255,255,.78);}
+.sinfo{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:13px 18px;margin-top:16px;width:100%;text-align:right;}
+.srow{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:rgba(255,255,255,.78);}
+.srow:last-child{margin-bottom:0;}
+.sval{font-weight:700;color:#fff;margin-right:6px;}
+.sbk{margin-top:20px;background:rgba(255,255,255,.17);border:1.5px solid rgba(255,255,255,.28);border-radius:13px;padding:10px 26px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
+.sbk:active{background:rgba(255,255,255,.26);}
+
+/* ══════════════════════════════
+   DISTRIB INPUT
+══════════════════════════════ */
+#distrib{background:var(--dbg);transition:background .3s;}
+.stats-bar{background:var(--dbg2);border-bottom:1px solid var(--dborder);padding:8px 12px;display:flex;gap:7px;flex-shrink:0;transition:background .3s,border .3s;}
+.stat-box{flex:1;background:var(--dbg3);border-radius:9px;padding:8px 5px;text-align:center;border:1px solid var(--dborder);transition:background .3s,border .3s;}
+.stat-box.g{border-color:rgba(34,197,94,.28);}
+.stat-box.r{border-color:rgba(239,68,68,.28);}
+.stat-box.y{border-color:rgba(245,158,11,.28);}
+.stat-num{font-size:clamp(17px,5vw,21px);font-weight:900;color:var(--dtext);line-height:1;transition:color .3s;}
+.stat-box.g .stat-num{color:#22c55e;}
+.stat-box.r .stat-num{color:#ef4444;}
+.stat-box.y .stat-num{color:#f59e0b;}
+.stat-lbl{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dtext3);margin-top:2px;transition:color .3s;}
+
+.dpanel{flex:1;overflow-y:auto;background:var(--dbg3);padding:12px 13px;scrollbar-width:none;display:flex;flex-direction:column;gap:10px;transition:background .3s;}
+.dpanel::-webkit-scrollbar{display:none;}
+.sec-hdr{display:flex;align-items:center;gap:7px;margin-bottom:1px;}
+.sec-hdr-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(228,0,43,.22),transparent);}
+.sec-hdr-lbl{font-size:10px;font-weight:700;letter-spacing:2px;color:#E4002B;text-transform:uppercase;white-space:nowrap;}
+
+/* ── MANUAL INPUT BOX ── */
+.manual-main{
+  background:rgba(228,0,43,.06);
+  border:2px solid #E4002B;
+  border-radius:16px;padding:14px 14px 12px;
+  box-shadow:0 0 0 3px rgba(228,0,43,.1),0 6px 20px rgba(228,0,43,.15);
+}
+.mm-lbl{font-size:11px;font-weight:800;letter-spacing:2px;color:#E4002B;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.mm-lbl::before{content:'✏️';font-size:14px;}
+
+/* ── BIG CODE INPUT — RED → GREEN ── */
+.man-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
+.man-inp{
+  flex:1;
+  background:#0e0000;
+  border:2.5px solid #E4002B;
+  border-radius:12px;
+  padding:14px 16px;
+  font-family:'Cairo',sans-serif;
+  font-size:clamp(22px,6vw,28px);font-weight:900;
+  color:#E4002B;letter-spacing:4px;
+  outline:none;
+  text-align:center;
+  -webkit-appearance:none;
+  transition:border .2s,box-shadow .2s,color .2s,background .2s;
+}
+.man-inp::placeholder{color:rgba(228,0,43,.35);font-weight:600;font-size:14px;letter-spacing:1px;}
+.man-inp:focus{border-color:#ff3355;box-shadow:0 0 0 4px rgba(228,0,43,.2);}
+/* AUTO GREEN after 7 digits */
+.man-inp.valid{
+  border-color:#22c55e !important;
+  color:#22c55e !important;
+  background:#001a06 !important;
+  box-shadow:0 0 0 4px rgba(34,197,94,.2) !important;
+  animation:greenPulse .4s ease both;
+}
+@keyframes greenPulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+.man-add{
+  width:clamp(48px,13vw,56px);height:clamp(48px,13vw,56px);flex-shrink:0;
+  background:linear-gradient(135deg,#E4002B,#b3001c);
+  color:#fff;border:none;border-radius:12px;font-size:24px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(228,0,43,.38);transition:transform .12s;
+}
+.man-add:active{transform:scale(.93);}
+
+/* progress dots */
+.dot-progress{
+  display:flex;justify-content:center;gap:5px;margin-bottom:8px;
+  height:16px;align-items:center;
+}
+.dot{
+  width:10px;height:10px;border-radius:50%;
+  background:rgba(228,0,43,.25);border:1.5px solid rgba(228,0,43,.4);
+  transition:background .15s,transform .15s;
+  flex-shrink:0;
+}
+.dot.filled{background:#E4002B;border-color:#E4002B;transform:scale(1.2);}
+.dot.all-green{background:#22c55e;border-color:#22c55e;}
+
+.man-hint{font-size:11px;font-weight:600;color:var(--dtext3);text-align:center;margin-bottom:8px;transition:color .2s;min-height:16px;}
+.man-hint.ok{color:#22c55e;font-weight:800;}
+.man-hint.warn{color:#f59e0b;}
+
+.chips-wrap{display:flex;flex-wrap:wrap;gap:6px;max-height:110px;overflow-y:auto;scrollbar-width:none;}
+.chips-wrap::-webkit-scrollbar{display:none;}
+.chip{display:flex;align-items:center;gap:4px;border-radius:20px;padding:4px 10px 4px 6px;font-size:12px;font-weight:800;letter-spacing:1px;}
+.chip.pending{background:rgba(228,0,43,.12);border:1.5px solid rgba(228,0,43,.3);color:#ff6680;}
+.chip.found{background:rgba(34,197,94,.12);border:1.5px solid rgba(34,197,94,.3);color:#22c55e;}
+.chip.missing{background:rgba(100,100,100,.1);border:1.5px solid #2a2a2a;color:#555;}
+.chip-rm{width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#666;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chip-cnt{font-size:10px;font-weight:700;color:var(--dtext3);text-align:center;margin-top:5px;}
+.cmp-btn{width:100%;height:48px;margin-top:8px;background:linear-gradient(135deg,#E4002B,#b3001c);color:#fff;border:none;border-radius:12px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 6px 18px rgba(228,0,43,.38),inset 0 1px 0 rgba(255,255,255,.16);position:relative;overflow:hidden;}
+.cmp-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,.11),transparent 55%);pointer-events:none;}
+.cmp-btn:active{transform:scale(.97);}.cmp-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+.up-area{width:100%;border:2px dashed rgba(228,0,43,.25);border-radius:13px;padding:16px;display:flex;flex-direction:column;align-items:center;cursor:pointer;background:rgba(228,0,43,.03);position:relative;overflow:hidden;}
+.up-area:active{border-color:rgba(228,0,43,.5);}
+.up-area input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;}
+.up-ico{font-size:28px;margin-bottom:3px;}.up-lbl{font-size:13px;font-weight:700;color:var(--dtext2);}.up-sub{font-size:10px;color:var(--dtext3);margin-top:2px;}
+.pg-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px;scrollbar-width:none;}
+.pg-strip::-webkit-scrollbar{display:none;}
+.pg-thumb{flex-shrink:0;width:clamp(56px,15vw,68px);position:relative;}
+.pg-thumb img{width:100%;height:clamp(75px,20vw,90px);object-fit:cover;border-radius:8px;border:2px solid var(--dborder2);display:block;}
+.pg-badge{position:absolute;top:-4px;right:-4px;width:17px;height:17px;border-radius:50%;background:#E4002B;color:#fff;font-size:8px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+.pg-count{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:8px;font-weight:700;color:#aaa;}
+.add-pg-btn{flex-shrink:0;width:clamp(56px,15vw,68px);height:clamp(75px,20vw,90px);border:2px dashed rgba(228,0,43,.28);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:rgba(228,0,43,.035);font-size:18px;color:rgba(228,0,43,.5);position:relative;overflow:hidden;}
+.add-pg-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0;}
+.add-pg-lbl{font-size:8px;font-weight:700;color:var(--dtext3);margin-top:2px;}
+.proc-btn{width:100%;height:48px;background:linear-gradient(135deg,#E4002B,#b3001c);color:#fff;border:none;border-radius:11px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 7px 20px rgba(228,0,43,.38),inset 0 1px 0 rgba(255,255,255,.16);position:relative;overflow:hidden;}
+.proc-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,.11),transparent 55%);pointer-events:none;}
+.proc-btn:active{transform:scale(.97);}.proc-btn:disabled{opacity:.38;cursor:not-allowed;}
+.prog-wrap{background:var(--dbg2);border-radius:11px;padding:12px 13px;display:none;transition:background .3s;}
+.prog-row{display:flex;justify-content:space-between;margin-bottom:5px;}
+.prog-lbl{font-size:11px;font-weight:700;color:var(--dtext2);transition:color .3s;}
+.prog-pct{font-size:11px;font-weight:800;color:#E4002B;}
+.prog-bar{width:100%;height:5px;background:var(--dborder);border-radius:10px;overflow:hidden;transition:background .3s;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#E4002B,#ff5577);border-radius:10px;width:0%;transition:width .28s;}
+.prog-step{font-size:10px;color:var(--dtext3);margin-top:4px;transition:color .3s;}
+
+/* start fab */
+.start-fab{
+  flex-shrink:0;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff;border:none;
+  width:100%;height:clamp(54px,14vw,64px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  font-family:'Cairo',sans-serif;font-size:clamp(15px,4vw,17px);font-weight:800;
+  display:none;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+  box-shadow:0 -4px 20px rgba(34,197,94,.28),inset 0 1px 0 rgba(255,255,255,.2);
+  position:relative;overflow:hidden;
+}
+.start-fab::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,255,255,.12),transparent 55%);pointer-events:none;}
+.start-fab:active{transform:scale(.98);}
+.start-fab.show{display:flex;}
+
+/* ══════════════════════════════
+   NAV SCREEN
+══════════════════════════════ */
+#navscreen{background:var(--dbg);flex-direction:column;transition:background .3s;}
+.nav-hdr{
+  flex-shrink:0;
+  background:linear-gradient(135deg,#0a2e00 0%,#091a05 100%);
+  display:flex;align-items:center;gap:12px;
+  padding:calc(env(safe-area-inset-top,16px) + 8px) 16px 10px;
+  border-bottom:1px solid #1a2e1a;
+}
+.nav-hdr-back{width:36px;height:36px;border-radius:50%;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#22c55e;}
+.nav-hdr-back:active{background:rgba(34,197,94,.25);}
+.nav-hdr-title{font-size:16px;font-weight:800;color:#fff;flex:1;}
+.nav-hdr-badge{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:800;color:#22c55e;}
+
+.split-container{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+
+/* codes panel */
+.codes-panel{flex-shrink:0;overflow:hidden;display:flex;flex-direction:column;transition:height .35s cubic-bezier(.4,0,.2,1);}
+.codes-panel.half{height:50%;}
+.codes-panel.full{height:100%;}
+.codes-panel.zero{height:0;overflow:hidden;}
+
+/* map panel */
+.map-panel{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative;transition:flex .35s;min-height:0;}
+.map-panel.full-map{position:absolute;inset:0;z-index:20;}
+.map-panel.zero-map{height:0;overflow:hidden;flex:0;}
+
+.split-handle{flex-shrink:0;height:8px;background:var(--dbg2);border-top:1px solid var(--dborder);border-bottom:1px solid var(--dborder);display:flex;align-items:center;justify-content:center;transition:height .35s,background .3s;}
+.split-handle.hidden{height:0;overflow:hidden;}
+.split-handle-bar{width:40px;height:3px;background:var(--dborder2);border-radius:10px;}
+
+.codes-hdr{background:var(--dbg2);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--dborder);flex-shrink:0;transition:background .3s,border .3s;}
+.codes-hdr-title{font-size:11px;font-weight:700;color:var(--dtext3);letter-spacing:1.5px;text-transform:uppercase;transition:color .3s;}
+.codes-hdr-counts{display:flex;gap:6px;align-items:center;}
+.ch-badge{font-size:10px;font-weight:800;border-radius:20px;padding:2px 9px;}
+.ch-badge.g{background:rgba(34,197,94,.11);color:#22c55e;border:1px solid rgba(34,197,94,.18);}
+.ch-badge.r{background:rgba(239,68,68,.11);color:#ef4444;border:1px solid rgba(239,68,68,.18);}
+.expand-codes-btn{background:rgba(255,255,255,.07);border:1px solid var(--dborder2);border-radius:8px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--dtext3);cursor:pointer;white-space:nowrap;transition:background .2s,color .3s,border .3s;}
+.expand-codes-btn:active{background:rgba(255,255,255,.14);}
+
+.codes-scroll{flex:1;overflow-y:auto;scrollbar-width:none;}
+.codes-scroll::-webkit-scrollbar{display:none;}
+
+.nci{display:flex;align-items:center;padding:11px 14px;border-bottom:1px solid var(--dborder);gap:10px;cursor:pointer;transition:background .12s;}
+.nci:last-child{border-bottom:none;}
+.nci:active{background:rgba(255,255,255,.03);}
+.nci.active-item{background:rgba(34,197,94,.06);border-right:3px solid #22c55e;}
+.nci-rank{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;}
+.nci-rank.close{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.25);}
+.nci-rank.mid{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.25);}
+.nci-rank.far{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.25);}
+.nci-rank.unknown{background:var(--dbg2);color:var(--dtext3);border:1px solid var(--dborder);}
+.nci-info{flex:1;min-width:0;}
+.nci-code{font-size:15px;font-weight:900;letter-spacing:1.5px;font-family:monospace;color:var(--dtext);}
+.nci-code.missing{color:var(--dtext3);}
+.nci-name{font-size:11px;color:var(--dtext3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .3s;}
+.nci-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.nci-dist{font-size:10px;font-weight:700;border-radius:20px;padding:2px 8px;white-space:nowrap;}
+.nci-dist.close{background:rgba(34,197,94,.11);color:#22c55e;border:1px solid rgba(34,197,94,.18);}
+.nci-dist.mid{background:rgba(245,158,11,.11);color:#f59e0b;border:1px solid rgba(245,158,11,.18);}
+.nci-dist.far{background:rgba(239,68,68,.11);color:#ef4444;border:1px solid rgba(239,68,68,.18);}
+.nci-dist.unknown{background:rgba(50,50,50,.14);color:var(--dtext3);border:1px solid var(--dborder);}
+.nci-nav{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.22);border-radius:8px;padding:3px 8px;font-size:10px;font-weight:700;color:#22c55e;cursor:pointer;white-space:nowrap;}
+.nci-nav:active{background:rgba(34,197,94,.2);}
+
+.map-iframe{width:100%;height:100%;border:none;display:block;}
+.map-overlay{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.65);backdrop-filter:blur(8px);
+  border-radius:20px;padding:7px 18px;
+  font-size:12px;font-weight:700;color:#fff;
+  display:flex;align-items:center;gap:6px;
+  border:1px solid rgba(255,255,255,.15);
+  white-space:nowrap;transition:opacity .3s;pointer-events:none;
+}
+.map-overlay.hidden{opacity:0;}
+.map-open-btn{
+  position:absolute;bottom:12px;right:12px;z-index:10;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#fff;border-radius:22px;padding:8px 16px;
+  font-family:'Cairo',sans-serif;font-size:12px;font-weight:800;
+  text-decoration:none;display:none;align-items:center;gap:6px;
+  box-shadow:0 4px 16px rgba(34,197,94,.5);white-space:nowrap;
+}
+.map-col-btn{
+  position:absolute;top:10px;right:10px;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.2);
+  display:none;align-items:center;justify-content:center;
+  cursor:pointer;font-size:14px;color:#fff;z-index:5;
+}
+.map-col-btn:active{background:rgba(0,0,0,.8);}
+.map-panel.full-map .map-col-btn{display:flex;}
+.map-panel.full-map .map-overlay{display:none;}
+.codes-col-btn{
+  position:absolute;top:10px;right:10px;z-index:5;
+  width:32px;height:32px;border-radius:50%;
+  background:rgba(0,0,0,.5);border:1px solid var(--dborder2);
+  display:none;align-items:center;justify-content:center;
+  cursor:pointer;font-size:13px;color:var(--dtext2);
+}
+.codes-col-btn:active{background:rgba(0,0,0,.7);}
+.codes-panel.full .codes-col-btn{display:flex;}
+
+.empty-nav{display:flex;flex-direction:column;align-items:center;padding:28px 14px;text-align:center;}
+.empty-nav-icon{font-size:34px;margin-bottom:7px;opacity:.35;}
+.empty-nav-txt{font-size:13px;color:var(--dtext3);font-weight:600;transition:color .3s;}
+
+/* ══════════════════════════════
+   SNACKBAR
+══════════════════════════════ */
+.snk{
+  position:fixed;
+  bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  left:14px;right:14px;
+  background:linear-gradient(135deg,#E4002B,#a2001a);
+  color:#fff;padding:13px 16px;border-radius:13px;
+  font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;
+  text-align:right;
+  transform:translateY(120px);
+  transition:transform .4s cubic-bezier(.34,1.3,.64,1);
+  z-index:1000;box-shadow:0 7px 24px rgba(228,0,43,.48);
+}
+.snk.green{background:linear-gradient(135deg,#16a34a,#138038);}
+.snk.show{transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ════════ HOME ════════ -->
+<div class="screen active" id="home">
+  <div class="blobs"><div class="bl bl1"></div><div class="bl bl2"></div><div class="bl bl3"></div></div>
+  <div class="bubs" id="bubs"></div>
+  <div class="sp" style="width:5px;height:5px;top:88px;right:60px;animation-duration:2.8s;"></div>
+  <div class="sp" style="width:3px;height:3px;top:148px;left:42px;animation-duration:3.4s;animation-delay:1.1s"></div>
+
+  <div class="home-status-bar">
+    <div class="home-time" id="clk">9:41</div>
+    <div class="home-icons"><span>▲▲▲</span><span style="font-size:10px;font-weight:700">4G</span><span>🔋</span></div>
+  </div>
+
+  <!-- DARK MODE TOGGLE -->
+  <div class="home-dark-tog" onclick="toggleDark()" id="darkToggle">
+    <span id="darkIcon" style="font-size:14px">☀️</span>
+    <div class="tog-track" id="togTrack"><div class="tog-thumb" id="togThumb"></div></div>
+    <span class="tog-lbl" id="togLbl">وضع عادي</span>
+  </div>
+
+  <div class="home-content">
+    <div class="logo-card">
+      <div class="logo-img">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/2560px-Coca-Cola_Logo.svg.png" alt="Coca-Cola"
+          onerror="this.style.display='none';document.getElementById('lf1').style.display='block'">
+        <div id="lf1" class="logo-fb">Coca‑Cola</div>
+      </div>
+      <svg class="wave" width="180" height="12" viewBox="0 0 180 12"><path d="M 8 9 Q 36 2 64 7 Q 90 12 116 6 Q 144 2 172 8" stroke="rgba(255,255,255,0.58)" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      <div class="divrow"><div class="divline"></div><span class="divstars">✦ ✦ ✦</span><div class="divline"></div></div>
+      <div class="sub-tag">Distributor Pro</div>
+    </div>
+  </div>
+  <div class="home-btns">
+    <div class="hdl"></div>
+    <div class="sec-row"><div class="sec-line"></div><span class="sec-txt">القائمة الرئيسية</span><div class="sec-line"></div></div>
+    <button class="btn-red" onclick="goTo('register','left')"><div class="ibx">👤</div>تسجيل الزبائن</button>
+    <button class="btn-out" onclick="goTo('distrib','left')"><div class="ibx">🚚</div>بدء عملية التوزيع</button>
+    <div class="spark-note"><div class="green-dot"></div> Spark — Firestore مجاني ✅</div>
+  </div>
+</div>
+
+<!-- ════════ REGISTER ════════ -->
+<div class="screen right" id="register">
+  <div class="hdr">
+    <button class="hdr-back" onclick="goTo('home','right')">←</button>
+    <span class="hdr-title">تسجيل زبون جديد</span>
+    <button class="dark-tog" onclick="toggleDark()"><span id="dIcon2">☀️</span></button>
+    <img class="hdr-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/2560px-Coca-Cola_Logo.svg.png" onerror="this.style.display='none'" alt="">
+  </div>
+  <div class="reg-scroll">
+    <div class="fcard">
+      <div class="fsec"><div class="fsec-line"></div><span class="fsec-lbl">🔑 الكود الأساسي</span><div class="fsec-line"></div></div>
+      <div class="fg">
+        <div class="flbl"><em>🔑</em> الكود الفريد <span class="req">إجباري</span></div>
+        <!-- RED INPUT → AUTO GREEN at 7 chars -->
+        <input class="code-inp" id="codeInp" type="tel" inputmode="numeric"
+          placeholder="0000000" maxlength="7"
+          oninput="onRegCodeInput(this)">
+        <!-- dot progress for register page -->
+        <div style="display:flex;justify-content:center;gap:6px;margin-top:8px;" id="regDots">
+          <div class="rdot" id="rd0"></div><div class="rdot" id="rd1"></div>
+          <div class="rdot" id="rd2"></div><div class="rdot" id="rd3"></div>
+          <div class="rdot" id="rd4"></div><div class="rdot" id="rd5"></div>
+          <div class="rdot" id="rd6"></div>
+        </div>
+        <div id="codeHint" style="font-size:11px;color:#aaa;margin-top:4px;text-align:center;">أدخل كوداً فريداً</div>
+      </div>
+      <div class="fsec"><div class="fsec-line"></div><span class="fsec-lbl">📋 بيانات إضافية</span><div class="fsec-line"></div></div>
+      <div class="fg"><div class="flbl"><em>🧑</em> الاسم <span class="opt">اختياري</span></div><input class="inp" id="nmInp" type="text" placeholder="اسم الزبون أو المحل"></div>
+      <div class="fg"><div class="flbl"><em>📱</em> الهاتف <span class="opt">اختياري</span></div><div class="phwrap"><span class="phpre">+213</span><input class="inp" id="phInp" type="tel" inputmode="numeric" maxlength="10" placeholder="0xxxxxxxxx" oninput="this.value=this.value.replace(/\D/g,'')"></div></div>
+      <div class="fg">
+        <div class="flbl"><em>🏪</em> صورة الدكان <span class="opt">اختياري</span></div>
+        <div class="photo-up" id="puArea"><input type="file" id="photoFile" accept="image/*" capture="environment" onchange="previewPhoto(this)"><div class="pu-ico">📷</div><div class="pu-lbl">التقاط أو رفع صورة</div><div class="pu-sub">⚡ تُحفظ في Firestore (max 1MB)</div></div>
+        <div class="photo-prev" id="pprev"><img id="pimg" src="" alt=""><button class="rm-ph" onclick="removePhoto()">✕</button></div>
+      </div>
+      <div class="fg"><div class="flbl"><em>📝</em> ملاحظة <span class="opt">اختياري</span></div><textarea class="inp" id="ntInp" placeholder="أي ملاحظة..."></textarea></div>
+      <div class="fsec"><div class="fsec-line"></div><span class="fsec-lbl">📍 الموقع</span><div class="fsec-line"></div></div>
+      <div class="fg">
+        <div class="locc" id="lc">
+          <div class="locico" id="li">📍</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--text2)">الموقع الجغرافي للزبون</div>
+            <div class="locsub" id="ls">سيتم تحديده تلقائياً عند التسجيل</div>
+          </div>
+        </div>
+        <!-- زر تحديث الموقع -->
+        <button class="update-loc-btn" id="updateLocBtn" onclick="updateLocation()">
+          📡 تحديث الموقع الآن
+        </button>
+      </div>
+      <button class="reg-btn" id="rb" onclick="doRegister()"><div class="spinw" id="sw"></div><span id="rbt">📥&nbsp; تسجيل الزبون</span></button>
+    </div>
+  </div>
+  <div class="sov" id="sovReg">
+    <div class="sov-sc">✅</div><h2>تم التسجيل!</h2><p>تم حفظ البيانات 🎉</p>
+    <div class="sinfo" id="sinfoReg"></div>
+    <button class="sbk" onclick="afterRegOk()">↩ العودة</button>
+  </div>
+</div>
+
+<!-- ════════ DISTRIB INPUT ════════ -->
+<div class="screen right" id="distrib">
+  <div class="hdr">
+    <button class="hdr-back" onclick="goTo('home','right')">←</button>
+    <span class="hdr-title">ورقة التوزيع</span>
+    <button class="dark-tog" onclick="toggleDark()"><span id="dIcon3">☀️</span></button>
+    <img class="hdr-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/2560px-Coca-Cola_Logo.svg.png" onerror="this.style.display='none'" alt="">
+  </div>
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-num" id="stTotal">0</div><div class="stat-lbl">الكل</div></div>
+    <div class="stat-box g"><div class="stat-num" id="stFound">0</div><div class="stat-lbl">موجود</div></div>
+    <div class="stat-box r"><div class="stat-num" id="stMissing">0</div><div class="stat-lbl">غائب</div></div>
+    <div class="stat-box y"><div class="stat-num" id="stPages">0</div><div class="stat-lbl">ورقة</div></div>
+  </div>
+  <div class="dpanel" id="dpanel">
+    <div>
+      <div class="sec-hdr"><div class="sec-hdr-line"></div><span class="sec-hdr-lbl">✏️ إدخال الأكواد — حتى 80 كود</span><div class="sec-hdr-line"></div></div>
+      <div class="manual-main">
+        <div class="mm-lbl">الأكواد السباعية</div>
+        <!-- DOT PROGRESS -->
+        <div class="dot-progress" id="dotProgress">
+          <div class="dot" id="d0"></div><div class="dot" id="d1"></div><div class="dot" id="d2"></div>
+          <div class="dot" id="d3"></div><div class="dot" id="d4"></div><div class="dot" id="d5"></div>
+          <div class="dot" id="d6"></div>
+        </div>
+        <div class="man-row">
+          <input class="man-inp" id="manInp" type="tel" inputmode="numeric" maxlength="7"
+            placeholder="0000000"
+            oninput="onManInput(this)"
+            onkeydown="if(event.key==='Enter')addCode()">
+          <button class="man-add" onclick="addCode()">➕</button>
+        </div>
+        <div class="man-hint" id="manHint">اكتب 7 أرقام — تتحول للأخضر تلقائياً</div>
+        <div class="chips-wrap" id="chipsWrap"></div>
+        <div class="chip-cnt" id="chipCnt" style="display:none"></div>
+        <button class="cmp-btn" id="cmpBtn" onclick="compareAll()" style="display:none;margin-top:10px">
+          <span id="cmpTxt">🔍 مقارنة مع Firebase وترتيب المسار</span>
+        </button>
+      </div>
+    </div>
+    <div id="uploadSec">
+      <div class="sec-hdr"><div class="sec-hdr-line"></div><span class="sec-hdr-lbl">📄 أو ارفع ورقة (OCR)</span><div class="sec-hdr-line"></div></div>
+      <div class="up-area"><input type="file" id="mainFile" accept="image/*" multiple onchange="addPages(this.files)"><div class="up-ico">📄</div><div class="up-lbl">ارفع صورة ورقة التوزيع</div><div class="up-sub">يمكن رفع أكثر من ورقة دفعة واحدة</div></div>
+    </div>
+    <div id="pagesWrap" style="display:none">
+      <div class="sec-hdr"><div class="sec-hdr-line"></div><span class="sec-hdr-lbl">🗂️ الأوراق</span><div class="sec-hdr-line"></div></div>
+      <div class="pg-strip" id="pgStrip">
+        <div class="add-pg-btn"><input type="file" id="addMoreFile" accept="image/*" multiple onchange="addPages(this.files)"><div>➕</div><div class="add-pg-lbl">إضافة</div></div>
+      </div>
+    </div>
+    <button class="proc-btn" id="procBtn" onclick="startOCR()" style="display:none" disabled>
+      <span id="procTxt">🔍&nbsp; استخراج الأكواد ومقارنتها</span>
+    </button>
+    <div class="prog-wrap" id="progWrap">
+      <div class="prog-row"><span class="prog-lbl" id="progLbl">جارٍ...</span><span class="prog-pct" id="progPct">0%</span></div>
+      <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+      <div class="prog-step" id="progStep"></div>
+    </div>
+  </div>
+  <button class="start-fab" id="startFab" onclick="goToNav()">🗺️&nbsp; بدء التوزيع والمسار</button>
+</div>
+
+<!-- ════════ NAV SCREEN ════════ -->
+<div class="screen below" id="navscreen">
+  <div class="nav-hdr">
+    <button class="nav-hdr-back" onclick="goTo('distrib','right')">←</button>
+    <span class="nav-hdr-title">🗺️ مسار التوزيع</span>
+    <div class="nav-hdr-badge" id="navBadge">0 زبون</div>
+  </div>
+  <div class="split-container">
+    <!-- CODES TOP -->
+    <div class="codes-panel half" id="codesPanel">
+      <div style="position:relative;flex-shrink:0;">
+        <div class="codes-hdr">
+          <span class="codes-hdr-title">الفواتير — الأبعد أولاً</span>
+          <div class="codes-hdr-counts">
+            <span class="ch-badge g" id="nlFound">0 ✅</span>
+            <span class="ch-badge r" id="nlMissing">0 ❌</span>
+            <button class="expand-codes-btn" onclick="toggleCodes()">⤢ توسيع</button>
+          </div>
+        </div>
+        <button class="codes-col-btn" id="codesColBtn" onclick="toggleCodes()">✕</button>
+      </div>
+      <div class="codes-scroll" id="navCodesList">
+        <div class="empty-nav"><div class="empty-nav-icon">📋</div><div class="empty-nav-txt">أدخل الأكواد أولاً</div></div>
+      </div>
+    </div>
+    <!-- HANDLE -->
+    <div class="split-handle" id="splitHandle"><div class="split-handle-bar"></div></div>
+    <!-- MAP BOTTOM -->
+    <div class="map-panel" id="mapPanel" onclick="expandMap()">
+      <iframe class="map-iframe" id="mapIframe" src="about:blank" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <a class="map-open-btn" id="openMapsBtn" href="#" target="_blank" onclick="event.stopPropagation()">🚗 ابدأ الملاحة</a>
+      <div class="map-overlay" id="mapOverlay">👆 اضغط لتكبير الخريطة</div>
+      <button class="map-col-btn" onclick="collapseMap(event)">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- SNACK -->
+<div class="snk" id="snk"></div>
+
+<script>
+/* ── BUBBLES ── */
+(function(){
+  var bc=document.getElementById('bubs'),f=document.createDocumentFragment();
+  for(var i=0;i<16;i++){
+    var b=document.createElement('div');b.className='bub';
+    var s=3+Math.random()*10;
+    b.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(Math.random()*100)+'%;bottom:'+(Math.random()*60)+'%;animation-duration:'+(5+Math.random()*9)+'s;animation-delay:'+(Math.random()*9)+'s;';
+    f.appendChild(b);
+  }bc.appendChild(f);
+})();
+
+/* ── CLOCK ── */
+function tick(){
+  var n=new Date(),t=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+  document.getElementById('clk').textContent=t;
+}
+tick();setInterval(tick,30000);
+
+/* ══════════════════════
+   DARK MODE
+══════════════════════ */
+var isDark=false;
+
+function toggleDark(){
+  isDark=!isDark;
+  document.documentElement.setAttribute('data-theme', isDark?'dark':'light');
+  var icon=isDark?'🌙':'☀️';
+  var lbl=isDark?'وضع داكن':'وضع عادي';
+  // update all toggle icons
+  ['darkIcon','dIcon2','dIcon3'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.textContent=icon;
+  });
+  document.getElementById('togLbl').textContent=lbl;
+  var tr=document.getElementById('togTrack'),th=document.getElementById('togThumb');
+  if(isDark){tr.classList.add('on');th.classList.add('on');}
+  else{tr.classList.remove('on');th.classList.remove('on');}
+  // save preference
+  try{localStorage.setItem('dark',isDark?'1':'0');}catch(e){}
+}
+
+// load saved theme
+(function(){
+  try{
+    var saved=localStorage.getItem('dark');
+    if(saved==='1'){toggleDark();}
+  }catch(e){}
+})();
+
+/* ── REGISTER CODE INPUT — RED → GREEN at 7 digits ── */
+function onRegCodeInput(inp){
+  var v=inp.value.replace(/\D/g,'');
+  if(v.length>7)v=v.slice(0,7);
+  inp.value=v;
+  var h=document.getElementById('codeHint');
+
+  // update dots
+  for(var i=0;i<7;i++){
+    var dot=document.getElementById('rd'+i);
+    if(!dot)continue;
+    if(v.length===7){
+      dot.classList.remove('filled');dot.classList.add('green');
+    } else {
+      dot.classList.remove('green');
+      if(i<v.length)dot.classList.add('filled');
+      else dot.classList.remove('filled');
+    }
+  }
+
+  if(v.length===0){
+    inp.classList.remove('green-state','error');
+    inp.style.borderColor='';inp.style.color='';inp.style.background='';
+    h.style.color='#aaa';h.textContent='أدخل الكود الفريد للزبون (7 أرقام)';
+  } else if(v.length<7){
+    inp.classList.remove('green-state','error');
+    // keep red
+    inp.style.borderColor='#E4002B';
+    inp.style.color='#E4002B';
+    h.style.color='#f59e0b';h.textContent='⚠️ '+v.length+'/7 أرقام — أكمل';
+  } else {
+    // 7 DIGITS — FLASH GREEN
+    inp.classList.remove('error');
+    inp.classList.add('green-state');
+    inp.style.borderColor='#22c55e';
+    inp.style.color='#22c55e';
+    inp.style.background='rgba(34,197,94,.07)';
+    h.style.color='#22c55e';
+    h.innerHTML='✅ <b>'+v+'</b> — الكود جاهز!';
+  }
+}
+
+/* ── UPDATE LOCATION (re-detect GPS) ── */
+var currentCoords=null;
+async function updateLocation(){
+  var btn=document.getElementById('updateLocBtn');
+  var lc=document.getElementById('lc'),li=document.getElementById('li'),ls=document.getElementById('ls');
+  btn.classList.add('loading');
+  btn.textContent='📡 جارٍ تحديد الموقع...';
+  lc.className='locc pulsing';li.textContent='🔄';li.className='locico spin';
+  var gpsCount=0;
+  var timer=setInterval(function(){gpsCount++;ls.textContent='📡 يبحث... ('+gpsCount+'ث)';},1000);
+  try{
+    var p=await getGPS();
+    clearInterval(timer);
+    currentCoords={lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy)};
+    lc.className='locc done';li.textContent='✅';li.className='locico ok';
+    var accColor=currentCoords.acc<=15?'#22c55e':currentCoords.acc<=30?'#f59e0b':'#ef4444';
+    var accLabel=currentCoords.acc<=15?'🟢 ممتازة ±'+currentCoords.acc+'م':currentCoords.acc<=30?'🟡 جيدة ±'+currentCoords.acc+'م':'🔴 ±'+currentCoords.acc+'م';
+    ls.innerHTML='<span class="ok">📍 '+currentCoords.lat.toFixed(6)+', '+currentCoords.lng.toFixed(6)+'</span><br>'+
+      '<span style="font-size:11px;font-weight:700;color:'+accColor+'">🎯 دقة '+accLabel+'</span>';
+    btn.style.background='rgba(34,197,94,.1)';
+    btn.textContent='✅ تم تحديد الموقع — اضغط مجدداً للتحديث';
+  }catch(e){
+    clearInterval(timer);
+    lc.className='locc';li.textContent='⚠️';li.className='locico';
+    ls.textContent='تعذّر تحديد الموقع — تحقق من إذن GPS';ls.className='locsub err';
+    btn.textContent='🔄 حاول مجدداً';
+  }
+  btn.classList.remove('loading');
+}
+
+/* ── ROUTER ── */
+function goTo(id,dir){
+  var from=document.querySelector('.screen.active');
+  var to=document.getElementById(id);
+  if(!to||to===from)return;
+  var outClass,inClass;
+  if(id==='navscreen'){outClass='left';inClass='below';}
+  else if(from&&from.id==='navscreen'){outClass='below';inClass='left';}
+  else{outClass=dir==='left'?'left':'right';inClass=dir==='left'?'right':'left';}
+  if(from)from.className='screen '+outClass;
+  to.className='screen active';
+}
+
+/* ── SNACK ── */
+var snkT;
+function snk(m,g){
+  var e=document.getElementById('snk');
+  e.className='snk show'+(g?' green':'');e.textContent=m;
+  clearTimeout(snkT);snkT=setTimeout(function(){e.classList.remove('show');},3500);
+}
+
+/* ══════════════════════
+   CODE INPUT — RED → GREEN
+══════════════════════ */
+function onCodeInput(inp){
+  // allow letters + numbers + dash
+  var v=inp.value.replace(/[^A-Za-z0-9\-]/g,'').toUpperCase();
+  inp.value=v;
+  var h=document.getElementById('codeHint');
+  if(v.length===0){
+    inp.classList.remove('green-state','error');
+    h.style.color='#aaa';h.textContent='أدخل كوداً فريداً (أرقام أو حروف)';
+  } else if(v.length<3){
+    inp.classList.remove('green-state','error');
+    h.style.color='#f59e0b';h.textContent='⚠️ قصير — أكمل الكود';
+  } else {
+    inp.classList.remove('error');
+    inp.classList.add('green-state');
+    h.style.color='#22c55e';h.textContent='✅ كود جاهز: '+v;
+  }
+}
+
+/* ══════════════════════
+   MANUAL 7-DIGIT INPUT
+══════════════════════ */
+function updateDots(n,allGreen){
+  for(var i=0;i<7;i++){
+    var dot=document.getElementById('d'+i);
+    if(!dot)continue;
+    if(allGreen){dot.classList.add('all-green');dot.classList.add('filled');}
+    else{dot.classList.remove('all-green');if(i<n)dot.classList.add('filled');else dot.classList.remove('filled');}
+  }
+}
+
+function onManInput(inp){
+  var v=inp.value.replace(/\D/g,'');inp.value=v;
+  var h=document.getElementById('manHint');
+  updateDots(v.length,false);
+  if(!v){
+    inp.classList.remove('valid');
+    h.className='man-hint';h.textContent='اكتب 7 أرقام — تتحول للأخضر تلقائياً';
+  } else if(v.length<7){
+    inp.classList.remove('valid');
+    h.className='man-hint warn';h.textContent='⚠️ '+v.length+'/7 أرقام';
+  } else if(manCodes.includes(v)){
+    inp.classList.remove('valid');
+    h.className='man-hint warn';h.textContent='⚠️ الكود موجود بالفعل';
+  } else {
+    // 7 DIGITS → AUTO GREEN
+    inp.classList.add('valid');
+    updateDots(7,true);
+    h.className='man-hint ok';h.textContent='✅ تمت القراءة! يُضاف في لحظة...';
+    // auto-add after 700ms
+    clearTimeout(inp._t);
+    inp._t=setTimeout(function(){
+      if(document.getElementById('manInp').value.replace(/\D/g,'').length===7){
+        addCode();
+      }
+    },700);
+  }
+}
+
+/* ══════════════════════
+   REGISTER
+══════════════════════ */
+var photoB64=null;
+function previewPhoto(input){
+  if(!input.files||!input.files[0])return;
+  var file=input.files[0];
+  if(file.size>1024*1024){snk('⚠️ الصورة يجب أن تكون أقل من 1MB');return;}
+  var r=new FileReader();
+  r.onload=function(e){
+    photoB64=e.target.result;
+    document.getElementById('pimg').src=e.target.result;
+    document.getElementById('pprev').style.display='block';
+    document.getElementById('puArea').style.display='none';
+  };r.readAsDataURL(file);
+}
+function removePhoto(){
+  photoB64=null;document.getElementById('pimg').src='';
+  document.getElementById('pprev').style.display='none';
+  document.getElementById('puArea').style.display='flex';
+  document.getElementById('photoFile').value='';
+}
+function getGPS(){
+  return new Promise(function(res,rej){
+    if(!navigator.geolocation){rej(new Error('no-gps'));return;}
+
+    var best=null;
+    var attempts=0;
+    var MAX_ATTEMPTS=5;
+    var TARGET_ACC=15; // meters — very precise
+    var TIMEOUT=25000;
+    var done=false;
+
+    var masterTimeout=setTimeout(function(){
+      if(!done){
+        done=true;
+        if(best)res(best);
+        else rej(new Error('timeout'));
+      }
+    },TIMEOUT);
+
+    function tryOnce(){
+      if(done)return;
+      attempts++;
+      navigator.geolocation.getCurrentPosition(
+        function(p){
+          if(done)return;
+          // keep best (most accurate)
+          if(!best||p.coords.accuracy<best.coords.accuracy){
+            best=p;
+          }
+          // if good enough — resolve immediately
+          if(p.coords.accuracy<=TARGET_ACC){
+            done=true;clearTimeout(masterTimeout);res(best);return;
+          }
+          // otherwise try again if attempts remain
+          if(attempts<MAX_ATTEMPTS){
+            setTimeout(tryOnce,1500);
+          } else {
+            done=true;clearTimeout(masterTimeout);res(best);
+          }
+        },
+        function(err){
+          if(done)return;
+          if(best){done=true;clearTimeout(masterTimeout);res(best);}
+          else if(attempts<MAX_ATTEMPTS){setTimeout(tryOnce,1500);}
+          else{done=true;clearTimeout(masterTimeout);rej(err);}
+        },
+        {enableHighAccuracy:true,timeout:8000,maximumAge:0}
+      );
+    }
+
+    tryOnce();
+  });
+}
+async function doRegister(){
+  var code=document.getElementById('codeInp').value.trim();
+  if(!code){document.getElementById('codeInp').classList.add('error');snk('❌ الكود إجباري');return;}
+  var nm=document.getElementById('nmInp').value.trim(),ph=document.getElementById('phInp').value.trim(),nt=document.getElementById('ntInp').value.trim();
+  var rb=document.getElementById('rb'),sw=document.getElementById('sw'),rbt=document.getElementById('rbt');
+  rb.disabled=true;sw.style.display='block';rbt.textContent='جارٍ تحديد الموقع...';
+  var lc=document.getElementById('lc'),li=document.getElementById('li'),ls=document.getElementById('ls');
+  lc.className='locc pulsing';li.textContent='🔄';li.className='locico spin';
+  // use pre-detected coords OR get fresh GPS
+  var coords=currentCoords||null;
+  if(coords){
+    // already have location — show it
+    lc.className='locc done';li.textContent='✅';li.className='locico ok';
+    var accColor2=coords.acc<=15?'#22c55e':coords.acc<=30?'#f59e0b':'#ef4444';
+    ls.innerHTML='<span class="ok">📍 '+coords.lat.toFixed(6)+', '+coords.lng.toFixed(6)+'</span><br>'+
+      '<span style="font-size:11px;font-weight:700;color:'+accColor2+'">🎯 دقة ±'+coords.acc+'م</span>';
+  } else {
+    ls.textContent='📡 يبحث عن GPS...';ls.className='locsub';
+    var gpsCount=0;
+    var gpsLiveTimer=setInterval(function(){gpsCount++;ls.textContent='📡 يبحث... ('+gpsCount+'ث)';},1000);
+    try{
+      var p=await getGPS();
+      clearInterval(gpsLiveTimer);
+      coords={lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy)};
+      currentCoords=coords;
+      lc.className='locc done';li.textContent='✅';li.className='locico ok';
+      var accColor=coords.acc<=15?'#22c55e':coords.acc<=30?'#f59e0b':'#ef4444';
+      var accLabel=coords.acc<=15?'🟢 ممتازة ±'+coords.acc+'م':coords.acc<=30?'🟡 جيدة ±'+coords.acc+'م':'🔴 ±'+coords.acc+'م';
+      ls.innerHTML='<span class="ok">📍 '+coords.lat.toFixed(6)+', '+coords.lng.toFixed(6)+'</span><br>'+
+        '<span style="font-size:11px;font-weight:700;color:'+accColor+'">🎯 دقة '+accLabel+'</span>';
+    }catch(e){
+      clearInterval(gpsLiveTimer);
+      lc.className='locc';li.textContent='⚠️';li.className='locico';
+      ls.textContent='اضغط "تحديث الموقع" أعلاه أو تحقق من إذن GPS';ls.className='locsub err';
+    }
+  }
+  rbt.textContent='جارٍ الحفظ...';
+  try{
+    await dbAdd(dbCol('customers'),{
+      code:code,name:nm||null,phone:ph||null,note:nt||null,photoBase64:photoB64||null,
+      location:coords?{latitude:coords.lat,longitude:coords.lng,accuracy:coords.acc,mapsUrl:'https://maps.google.com/?q='+coords.lat+','+coords.lng}:null,
+      createdAt:dbTS()
+    });
+    document.getElementById('sinfoReg').innerHTML=
+      '<div class="srow"><span>🔑 الكود</span><span class="sval">'+code+'</span></div>'+
+      (nm?'<div class="srow"><span>👤 الاسم</span><span class="sval">'+nm+'</span></div>':'')+
+      (coords?'<div class="srow"><span>📍 الإحداثيات</span><span class="sval">'+coords.lat.toFixed(5)+', '+coords.lng.toFixed(5)+'</span></div>'+
+        '<div class="srow"><span>🎯 دقة GPS</span><span class="sval">±'+coords.acc+'م '+(coords.acc<=15?'🟢 ممتازة':coords.acc<=30?'🟡 جيدة':'🔴 متوسطة')+'</span></div>':'');
+    document.getElementById('sovReg').classList.add('show');
+  }catch(err){snk('❌ خطأ: '+(err.code||err.message));}
+  rb.disabled=false;sw.style.display='none';rbt.textContent='📥\u00A0 تسجيل الزبون';
+}
+function afterRegOk(){
+  ['codeInp','nmInp','phInp','ntInp'].forEach(function(id){document.getElementById(id).value='';});
+  removePhoto();photoB64=null;
+  document.getElementById('codeInp').classList.remove('green-state','error');
+  document.getElementById('codeInp').style.borderColor='';
+  document.getElementById('codeInp').style.color='';
+  document.getElementById('codeInp').style.background='';
+  document.getElementById('codeHint').style.color='#aaa';
+  document.getElementById('codeHint').textContent='أدخل الكود الفريد للزبون (7 أرقام)';
+  // reset dots
+  for(var i=0;i<7;i++){var d=document.getElementById('rd'+i);if(d){d.classList.remove('filled','green');}}
+  // reset update button
+  var ub=document.getElementById('updateLocBtn');
+  if(ub){ub.style.background='';ub.textContent='📡 تحديث الموقع الآن';}
+  currentCoords=null;
+  document.getElementById('sovReg').classList.remove('show');
+  var lc=document.getElementById('lc'),li=document.getElementById('li'),ls=document.getElementById('ls');
+  lc.className='locc';li.textContent='📍';li.className='locico';ls.textContent='عند الضغط على زر التسجيل';ls.className='locsub';
+  goTo('home','right');
+}
+
+/* ══════════════════════
+   DISTRIBUTION ENGINE
+══════════════════════ */
+var pages=[],ocrWorker=null,allCodes=[],manCodes=[],userLat=null,userLng=null;
+var MAX_CODES=80;
+function extract7(t){var m=t.match(/\b\d{7}\b/g)||[];return[...new Set(m)];}
+function hav(a,b,c,d){var R=6371,dL=(c-a)*Math.PI/180,dG=(d-b)*Math.PI/180;var x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function dc(km){if(km===null)return'unknown';if(km<2)return'close';if(km<5)return'mid';return'far';}
+function dl(km){if(km===null)return'بدون موقع';if(km<1)return Math.round(km*1000)+'م';return km.toFixed(1)+'كم';}
+function sortClose(){allCodes.sort(function(a,b){if(a.distance===null&&b.distance===null)return 0;if(a.distance===null)return 1;if(b.distance===null)return-1;return a.distance-b.distance;});}
+function updateStats(){
+  var t=allCodes.length,f=allCodes.filter(function(c){return c.status==='found';}).length;
+  document.getElementById('stTotal').textContent=t;
+  document.getElementById('stFound').textContent=f;
+  document.getElementById('stMissing').textContent=t-f;
+  document.getElementById('stPages').textContent=pages.length;
+  var fab=document.getElementById('startFab');
+  if(t>0)fab.classList.add('show');else fab.classList.remove('show');
+}
+async function getLocation(){
+  return new Promise(function(res){
+    if(!navigator.geolocation){res();return;}
+    navigator.geolocation.getCurrentPosition(function(p){userLat=p.coords.latitude;userLng=p.coords.longitude;res();},function(){res();},{enableHighAccuracy:true,timeout:8000,maximumAge:30000});
+  });
+}
+
+function addCode(){
+  var inp=document.getElementById('manInp'),code=inp.value.replace(/\D/g,'');
+  if(code.length!==7){snk('⚠️ يجب أن يكون الكود 7 أرقام');return;}
+  if(manCodes.includes(code)){snk('⚠️ الكود موجود بالفعل');return;}
+  if(manCodes.length>=MAX_CODES){snk('⚠️ الحد الأقصى 80 كود');return;}
+  manCodes.push(code);
+  inp.value='';inp.classList.remove('valid');
+  updateDots(0,false);
+  document.getElementById('manHint').className='man-hint';
+  document.getElementById('manHint').textContent='✅ تم إضافة '+code+' — أدخل الكود التالي';
+  setTimeout(function(){
+    if(!document.getElementById('manInp').value){
+      document.getElementById('manHint').textContent='اكتب 7 أرقام — تتحول للأخضر تلقائياً';
+      document.getElementById('manHint').className='man-hint';
+    }
+  },2000);
+  renderChips();
+  document.getElementById('cmpBtn').style.display='flex';
+  document.getElementById('chipCnt').style.display='block';
+  inp.focus();
+}
+function removeCode(code){
+  manCodes=manCodes.filter(function(c){return c!==code;});
+  allCodes=allCodes.filter(function(c){return!(c.code===code&&c.source==='manual');});
+  renderChips();updateStats();
+  if(!manCodes.length){document.getElementById('cmpBtn').style.display='none';document.getElementById('chipCnt').style.display='none';}
+}
+function renderChips(){
+  document.getElementById('chipsWrap').innerHTML=manCodes.map(function(c){
+    var found=allCodes.find(function(a){return a.code===c;});
+    var cls=found?(found.status==='found'?'found':'missing'):'pending';
+    return '<div class="chip '+cls+'"><button class="chip-rm" onclick="removeCode(\''+c+'\')">✕</button>'+c+'</div>';
+  }).join('');
+  document.getElementById('chipCnt').textContent=manCodes.length+' كود'+(manCodes.length>=MAX_CODES?' — الحد الأقصى':'');
+}
+async function compareAll(){
+  if(!manCodes.length){snk('⚠️ لا توجد أكواد');return;}
+  var btn=document.getElementById('cmpBtn');btn.disabled=true;document.getElementById('cmpTxt').textContent='⏳ جارٍ المقارنة...';
+  await getLocation();
+  var fbMap={};
+  try{
+    for(var i=0;i<manCodes.length;i+=30){
+      var batch=manCodes.slice(i,i+30);
+      var snap=await dbGet(dbWhere(dbCol('customers'),'code','in',batch));
+      snap.docs.forEach(function(d){var dat=d.data();fbMap[dat.code]={name:dat.name||null,lat:dat.location?dat.location.latitude:null,lng:dat.location?dat.location.longitude:null};});
+    }
+  }catch(e){snk('⚠️ خطأ Firebase');}
+  allCodes=allCodes.filter(function(c){return c.source!=='manual';});
+  manCodes.forEach(function(code){
+    var fb=fbMap[code];var dist=null;
+    if(fb&&fb.lat!=null&&userLat!=null)dist=hav(userLat,userLng,fb.lat,fb.lng);
+    allCodes.push({code:code,status:fb?'found':'missing',name:fb?fb.name:null,distance:dist,lat:fb?fb.lat:null,lng:fb?fb.lng:null,source:'manual'});
+  });
+  sortClose();renderChips();updateStats();
+  btn.disabled=false;document.getElementById('cmpTxt').textContent='🔄 إعادة المقارنة';
+  var f=allCodes.filter(function(c){return c.status==='found';}).length;
+  snk('✅ '+allCodes.length+' كود — موجود: '+f+' | غائب: '+(allCodes.length-f),true);
+}
+
+/* OCR pages */
+function addPages(files){
+  if(!files||!files.length)return;
+  Array.from(files).forEach(function(file){
+    if(!file.type.startsWith('image/'))return;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var pg={file:file,dataUrl:e.target.result,codes:[]};pages.push(pg);addThumb(pg,pages.length-1);
+      document.getElementById('uploadSec').style.display='none';
+      document.getElementById('pagesWrap').style.display='block';
+      document.getElementById('procBtn').style.display='flex';
+      document.getElementById('procBtn').disabled=false;
+      document.getElementById('stPages').textContent=pages.length;
+    };reader.readAsDataURL(file);
+  });
+}
+function addThumb(pg,idx){
+  var strip=document.getElementById('pgStrip'),addBtn=document.getElementById('addPgBtn');
+  var div=document.createElement('div');div.className='pg-thumb';div.id='thumb_'+idx;
+  div.innerHTML='<img src="'+pg.dataUrl+'"><div class="pg-badge">'+(idx+1)+'</div><div class="pg-count">—</div>';
+  strip.insertBefore(div,addBtn);
+}
+async function startOCR(){
+  if(!pages.length){snk('⚠️ لم يتم رفع أي ورقة');return;}
+  var btn=document.getElementById('procBtn'),pw=document.getElementById('progWrap');
+  btn.disabled=true;document.getElementById('procTxt').textContent='⏳ جارٍ...';
+  pw.style.display='block';setP(0,'تهيئة OCR...','');
+  await getLocation();
+  try{
+    if(!ocrWorker){
+      ocrWorker=await Tesseract.createWorker('eng',1,{logger:function(){}});
+      await ocrWorker.setParameters({tessedit_char_whitelist:'0123456789 \n',tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});
+    }
+  }catch(e){snk('❌ فشل OCR');btn.disabled=false;return;}
+  var ocr7=[];
+  for(var i=0;i<pages.length;i++){
+    setP(10+Math.round((i/pages.length)*52),'قراءة الورقة '+(i+1)+'...','');
+    try{
+      var canvas=await preproc(pages[i].dataUrl);
+      var res=await ocrWorker.recognize(canvas);
+      var codes=extract7(res.data.text);pages[i].codes=codes;
+      var th=document.getElementById('thumb_'+i);if(th)th.querySelector('.pg-count').textContent=codes.length+' كود';
+      ocr7.push.apply(ocr7,codes);
+    }catch(e){}
+  }
+  var uOCR=[...new Set(ocr7)];setP(68,'مقارنة '+uOCR.length+' كود...','');
+  var fbMap={};var all=[...new Set([...uOCR,...manCodes])];
+  try{
+    for(var j=0;j<all.length;j+=30){
+      var batch=all.slice(j,j+30);
+      var snap=await dbGet(dbWhere(dbCol('customers'),'code','in',batch));
+      snap.docs.forEach(function(d){var dat=d.data();fbMap[dat.code]={name:dat.name||null,lat:dat.location?dat.location.latitude:null,lng:dat.location?dat.location.longitude:null};});
+      setP(70+Math.round((j/all.length)*22),'مقارنة...','');
+    }
+  }catch(e){snk('⚠️ خطأ Firebase');}
+  allCodes=[];
+  uOCR.forEach(function(code){var fb=fbMap[code];var dist=null;if(fb&&fb.lat!=null&&userLat!=null)dist=hav(userLat,userLng,fb.lat,fb.lng);allCodes.push({code:code,status:fb?'found':'missing',name:fb?fb.name:null,distance:dist,lat:fb?fb.lat:null,lng:fb?fb.lng:null,source:'ocr'});});
+  manCodes.forEach(function(code){if(!allCodes.find(function(c){return c.code===code;})){var fb=fbMap[code];var dist=null;if(fb&&fb.lat!=null&&userLat!=null)dist=hav(userLat,userLng,fb.lat,fb.lng);allCodes.push({code:code,status:fb?'found':'missing',name:fb?fb.name:null,distance:dist,lat:fb?fb.lat:null,lng:fb?fb.lng:null,source:'manual'});}});
+  sortClose();renderChips();updateStats();
+  setP(100,'✅ اكتملت!','');setTimeout(function(){pw.style.display='none';},700);
+  btn.disabled=false;document.getElementById('procTxt').textContent='🔄 إعادة المعالجة';
+  var ff=allCodes.filter(function(c){return c.status==='found';}).length;
+  snk('✅ '+allCodes.length+' كود — موجود: '+ff+' | غائب: '+(allCodes.length-ff),true);
+}
+function preproc(dataUrl){
+  return new Promise(function(res){
+    var img=new Image();
+    img.onload=function(){
+      var canvas=document.createElement('canvas'),scale=2;
+      canvas.width=img.width*scale;canvas.height=img.height*scale;
+      var ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      var id=ctx.getImageData(0,0,canvas.width,canvas.height),d=id.data;
+      for(var i=0;i<d.length;i+=4){var g=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];var v=g>145?255:0;d[i]=d[i+1]=d[i+2]=v;}
+      ctx.putImageData(id,0,0);res(canvas);
+    };img.src=dataUrl;
+  });
+}
+function setP(pct,lbl,step){
+  document.getElementById('progPct').textContent=pct+'%';
+  document.getElementById('progLbl').textContent=lbl;
+  document.getElementById('progStep').textContent=step;
+  document.getElementById('progFill').style.width=pct+'%';
+}
+
+/* ══════════════════════
+   NAV SCREEN
+══════════════════════ */
+var mapExpanded=false,codesExpanded=false,navSorted=[],activeNavIdx=0;
+
+function goToNav(){
+  if(!allCodes.length){snk('⚠️ أضف أكواداً وقارنها أولاً');return;}
+  renderNavList();loadMap(0);
+  goTo('navscreen','left');
+}
+
+function renderNavList(){
+  navSorted=[...allCodes].sort(function(a,b){
+    if(a.distance===null&&b.distance===null)return 0;
+    if(a.distance===null)return-1;if(b.distance===null)return 1;
+    return b.distance-a.distance;// FAR first
+  });
+  var f=navSorted.filter(function(c){return c.status==='found';}).length;
+  document.getElementById('nlFound').textContent=f+' ✅';
+  document.getElementById('nlMissing').textContent=(navSorted.length-f)+' ❌';
+  document.getElementById('navBadge').textContent=navSorted.length+' زبون';
+  var html='';
+  navSorted.forEach(function(item,idx){
+    var cls=dc(item.distance),dstr=dl(item.distance);
+    var active=idx===activeNavIdx?' active-item':'';
+    html+='<div class="nci'+active+'" onclick="selectNav('+idx+')" data-idx="'+idx+'">'+
+      '<div class="nci-rank '+cls+'">'+(idx+1)+'</div>'+
+      '<div class="nci-info"><div class="nci-code '+(item.status)+'">'+item.code+'</div>'+
+      '<div class="nci-name">'+(item.name||(item.status==='missing'?'غير مسجّل':'—'))+'</div></div>'+
+      '<div class="nci-right"><span class="nci-dist '+cls+'">'+dstr+'</span>'+
+      (item.lat?'<button class="nci-nav" onclick="openMaps(\''+item.lat+'\',\''+item.lng+'\',event)">🚗 ابدأ</button>':'<span style="font-size:10px;color:#333">لا يوجد موقع</span>')+
+      '</div></div>';
+  });
+  document.getElementById('navCodesList').innerHTML=html||'<div class="empty-nav"><div class="empty-nav-icon">📋</div><div class="empty-nav-txt">لا توجد أكواد</div></div>';
+}
+
+function selectNav(idx){
+  activeNavIdx=idx;
+  document.querySelectorAll('.nci').forEach(function(el,i){el.className='nci'+(i===idx?' active-item':'');});
+  var item=navSorted[idx];if(item&&item.lat)loadMap(idx);
+}
+
+function loadMap(idx){
+  var item=navSorted[idx];
+  var iframe=document.getElementById('mapIframe');
+  var openBtn=document.getElementById('openMapsBtn');
+  var KEY='AIzaSyBnoMsY9p0sFEgOYmMKsiulx6lxn1fPxv8';
+
+  if(item&&item.lat&&item.lng){
+    var lat=item.lat,lng=item.lng;
+    var orig=userLat&&userLng?(userLat+','+userLng):(lat+','+lng);
+    var dest=lat+','+lng;
+    // Google Maps Embed — Directions mode
+    iframe.src='https://www.google.com/maps/embed/v1/directions'
+      +'?key='+KEY
+      +'&origin='+encodeURIComponent(orig)
+      +'&destination='+encodeURIComponent(dest)
+      +'&mode=driving'
+      +'&language=ar'
+      +'&avoid=tolls';
+    // open in Google Maps app
+    openBtn.href='https://www.google.com/maps/dir/?api=1'
+      +'&origin='+encodeURIComponent(orig)
+      +'&destination='+encodeURIComponent(dest)
+      +'&travelmode=driving';
+    openBtn.style.display='flex';
+  } else {
+    // no location — show user position or Algeria
+    var clat=userLat||36.7538, clng=userLng||3.0588;
+    iframe.src='https://www.google.com/maps/embed/v1/view'
+      +'?key='+KEY
+      +'&center='+clat+','+clng
+      +'&zoom=13'
+      +'&language=ar';
+    openBtn.style.display='none';
+  }
+}
+
+function openMaps(lat,lng,e){
+  if(e)e.stopPropagation();
+  var orig=userLat&&userLng?(userLat+','+userLng):(lat+','+lng);
+  window.open('https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(orig)+'&destination='+encodeURIComponent(lat+','+lng)+'&travelmode=driving','_blank');
+}
+
+function expandMap(){
+  if(mapExpanded)return;mapExpanded=true;codesExpanded=false;
+  document.getElementById('codesPanel').className='codes-panel zero';
+  document.getElementById('mapPanel').className='map-panel full-map';
+  document.getElementById('splitHandle').className='split-handle hidden';
+  document.getElementById('mapOverlay').classList.add('hidden');
+}
+function collapseMap(e){
+  if(e)e.stopPropagation();mapExpanded=false;
+  document.getElementById('codesPanel').className='codes-panel half';
+  document.getElementById('mapPanel').className='map-panel';
+  document.getElementById('splitHandle').className='split-handle';
+  document.getElementById('mapOverlay').classList.remove('hidden');
+}
+function toggleCodes(){
+  codesExpanded=!codesExpanded;
+  if(codesExpanded){
+    mapExpanded=false;
+    document.getElementById('codesPanel').className='codes-panel full';
+    document.getElementById('mapPanel').className='map-panel zero-map';
+    document.getElementById('splitHandle').className='split-handle hidden';
+  } else {
+    document.getElementById('codesPanel').className='codes-panel half';
+    document.getElementById('mapPanel').className='map-panel';
+    document.getElementById('splitHandle').className='split-handle';
+  }
+}
+</script>
+</body>
+</html>
