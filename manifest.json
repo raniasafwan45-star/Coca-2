@@ -1,0 +1,43 @@
+{
+  "name": "Coca-Cola Distributor Pro",
+  "short_name": "Coca Distrib",
+  "description": "تطبيق إدارة توزيع كوكاكولا",
+  "start_url": "./coca_cola_distributor%20(1).html",
+  "display": "standalone",
+  "background_color": "#E4002B",
+  "theme_color": "#E4002B",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/192px-Coca-Cola_Logo.svg.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/512px-Coca-Cola_Logo.svg.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "تسجيل زبون",
+      "short_name": "تسجيل",
+      "description": "تسجيل زبون جديد",
+      "url": "./coca_cola_distributor%20(1).html#register",
+      "icons": [{"src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/192px-Coca-Cola_Logo.svg.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "بدء التوزيع",
+      "short_name": "توزيع",
+      "description": "بدء عملية التوزيع",
+      "url": "./coca_cola_distributor%20(1).html#distrib",
+      "icons": [{"src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/192px-Coca-Cola_Logo.svg.png", "sizes": "192x192"}]
+    }
+  ]
+}
