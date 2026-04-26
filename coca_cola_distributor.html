@@ -10,7 +10,7 @@
 <meta name="application-name" content="Coca Distributor">
 <meta name="apple-mobile-web-app-title" content="Coca Distributor">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22Coca-Cola%20Distributor%20Pro%22%2C%20%22short_name%22%3A%20%22Coca%20Distrib%22%2C%20%22description%22%3A%20%22%D8%AA%D8%B7%D8%A8%D9%8A%D9%82%20%D8%A5%D8%AF%D8%A7%D8%B1%D8%A9%20%D8%AA%D9%88%D8%B2%D9%8A%D8%B9%20%D9%83%D9%88%D9%83%D8%A7%D9%83%D9%88%D9%84%D8%A7%22%2C%20%22start_url%22%3A%20%22/Coca-2/coca_cola_distributor%2520%281%29.html%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22background_color%22%3A%20%22%23E4002B%22%2C%20%22theme_color%22%3A%20%22%23E4002B%22%2C%20%22orientation%22%3A%20%22portrait%22%2C%20%22lang%22%3A%20%22ar%22%2C%20%22dir%22%3A%20%22rtl%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22https%3A//upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/192px-Coca-Cola_Logo.svg.png%22%2C%20%22sizes%22%3A%20%22192x192%22%2C%20%22type%22%3A%20%22image/png%22%2C%20%22purpose%22%3A%20%22any%20maskable%22%7D%2C%20%7B%22src%22%3A%20%22https%3A//upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/512px-Coca-Cola_Logo.svg.png%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image/png%22%2C%20%22purpose%22%3A%20%22any%20maskable%22%7D%5D%2C%20%22categories%22%3A%20%5B%22business%22%2C%20%22productivity%22%5D%2C%20%22shortcuts%22%3A%20%5B%7B%22name%22%3A%20%22%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B2%D8%A8%D9%88%D9%86%22%2C%20%22short_name%22%3A%20%22%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%22%2C%20%22description%22%3A%20%22%D8%AA%D8%B3%D8%AC%D9%8A%D9%84%20%D8%B2%D8%A8%D9%88%D9%86%20%D8%AC%D8%AF%D9%8A%D8%AF%22%2C%20%22url%22%3A%20%22./coca_cola_distributor%2520%281%29.html%23register%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22https%3A//upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/192px-Coca-Cola_Logo.svg.png%22%2C%20%22sizes%22%3A%20%22192x192%22%7D%5D%7D%2C%20%7B%22name%22%3A%20%22%D8%A8%D8%AF%D8%A1%20%D8%A7%D9%84%D8%AA%D9%88%D8%B2%D9%8A%D8%B9%22%2C%20%22short_name%22%3A%20%22%D8%AA%D9%88%D8%B2%D9%8A%D8%B9%22%2C%20%22description%22%3A%20%22%D8%A8%D8%AF%D8%A1%20%D8%B9%D9%85%D9%84%D9%8A%D8%A9%20%D8%A7%D9%84%D8%AA%D9%88%D8%B2%D9%8A%D8%B9%22%2C%20%22url%22%3A%20%22./coca_cola_distributor%2520%281%29.html%23distrib%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22https%3A//upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/192px-Coca-Cola_Logo.svg.png%22%2C%20%22sizes%22%3A%20%22192x192%22%7D%5D%7D%5D%2C%20%22scope%22%3A%20%22/Coca-2/%22%7D">
 <!-- Apple PWA icons -->
 <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/180px-Coca-Cola_Logo.svg.png">
 <title>Coca-Cola Distributor</title>
@@ -763,6 +763,8 @@ textarea.inp{resize:none;min-height:70px;line-height:1.6;}
   align-items:center;justify-content:center;
   z-index:100;
 }
+/* ensure login shows by default */
+#login.active{display:flex!important;}
 [data-theme="dark"] #login{
   background:linear-gradient(160deg,#1e0005 0%,#0d0000 50%,#060606 100%);
 }
@@ -848,49 +850,8 @@ textarea.inp{resize:none;min-height:70px;line-height:1.6;}
 </head>
 <body>
 
-<!-- ════════ LOGIN ════════ -->
-<div class="screen active" id="login">
-  <div class="login-blobs">
-    <div class="blobs"><div class="bl bl1"></div><div class="bl bl2"></div><div class="bl bl3"></div></div>
-  </div>
-  <div class="login-card">
-    <div class="login-logo">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/2560px-Coca-Cola_Logo.svg.png"
-        alt="Coca-Cola" onerror="this.style.display='none';document.getElementById('lfl1').style.display='block'">
-      <div id="lfl1" class="lfl">Coca‑Cola</div>
-    </div>
-    <div class="login-title">Distributor Pro</div>
-
-    <!-- code dots -->
-    <div class="login-dots" id="loginDots">
-      <div class="ldot" id="ld0"></div>
-      <div class="ldot" id="ld1"></div>
-      <div class="ldot" id="ld2"></div>
-      <div class="ldot" id="ld3"></div>
-    </div>
-
-    <div class="login-msg" id="loginMsg">أدخل الكود السري</div>
-
-    <!-- numpad -->
-    <div class="numpad">
-      <button class="nkey" onclick="loginKey('1')">1</button>
-      <button class="nkey" onclick="loginKey('2')">2</button>
-      <button class="nkey" onclick="loginKey('3')">3</button>
-      <button class="nkey" onclick="loginKey('4')">4</button>
-      <button class="nkey" onclick="loginKey('5')">5</button>
-      <button class="nkey" onclick="loginKey('6')">6</button>
-      <button class="nkey" onclick="loginKey('7')">7</button>
-      <button class="nkey" onclick="loginKey('8')">8</button>
-      <button class="nkey" onclick="loginKey('9')">9</button>
-      <button class="nkey empty"></button>
-      <button class="nkey" onclick="loginKey('0')">0</button>
-      <button class="nkey del" onclick="loginDel()">⌫</button>
-    </div>
-  </div>
-</div>
-
 <!-- ════════ HOME ════════ -->
-<div class="screen right" id="home">
+<div class="screen active" id="home">
   <div class="blobs"><div class="bl bl1"></div><div class="bl bl2"></div><div class="bl bl3"></div></div>
   <div class="bubs" id="bubs"></div>
   <div class="sp" style="width:5px;height:5px;top:88px;right:60px;animation-duration:2.8s;"></div>
@@ -1277,114 +1238,6 @@ async function updateLocation(){
     btn.textContent='🔄 حاول مجدداً';
   }
   btn.classList.remove('loading');
-}
-
-/* ══════════════════════
-   LOGIN — 4 DIGIT PIN
-   الكود: 1234 (غيّره هنا)
-══════════════════════ */
-var LOGIN_CODE = '1234'; // ← غيّر الكود هنا
-var loginInput = '';
-var loginLocked = false;
-var loginAttempts = 0;
-
-// always show login on fresh load
-// (session cleared when browser closes)
-(function(){
-  try{
-    var s=sessionStorage.getItem('loggedIn');
-    if(s==='1'){
-      // only skip login if same session (tab still open)
-      document.getElementById('login').className='screen left';
-      document.getElementById('home').className='screen active';
-    } else {
-      // force login screen
-      document.getElementById('login').className='screen active';
-      document.getElementById('home').className='screen right';
-    }
-  }catch(e){
-    document.getElementById('login').className='screen active';
-    document.getElementById('home').className='screen right';
-  }
-})();
-
-function loginKey(n){
-  if(loginLocked)return;
-  if(loginInput.length>=4)return;
-  loginInput+=n;
-  updateLoginDots();
-  if(loginInput.length===4){
-    setTimeout(checkLogin,200);
-  }
-}
-
-function loginDel(){
-  if(loginLocked)return;
-  if(!loginInput.length)return;
-  loginInput=loginInput.slice(0,-1);
-  updateLoginDots();
-  document.getElementById('loginMsg').className='login-msg';
-  document.getElementById('loginMsg').textContent='أدخل الكود السري';
-}
-
-function updateLoginDots(){
-  for(var i=0;i<4;i++){
-    var dot=document.getElementById('ld'+i);
-    if(!dot)continue;
-    dot.classList.remove('filled','green','error-dot');
-    if(i<loginInput.length) dot.classList.add('filled');
-  }
-}
-
-function checkLogin(){
-  if(loginInput===LOGIN_CODE){
-    // SUCCESS
-    for(var i=0;i<4;i++){
-      var dot=document.getElementById('ld'+i);
-      if(dot){dot.classList.remove('filled');dot.classList.add('green');}
-    }
-    document.getElementById('loginMsg').className='login-msg ok';
-    document.getElementById('loginMsg').textContent='✅ مرحباً بك!';
-    try{sessionStorage.setItem('loggedIn','1');}catch(e){}
-    setTimeout(function(){
-      document.getElementById('login').className='screen left';
-      document.getElementById('home').className='screen active';
-    },600);
-  } else {
-    // ERROR
-    loginAttempts++;
-    loginInput='';
-    for(var i=0;i<4;i++){
-      var dot=document.getElementById('ld'+i);
-      if(dot){dot.classList.remove('filled');dot.classList.add('error-dot');}
-    }
-    document.getElementById('loginMsg').className='login-msg error';
-    var remaining=5-loginAttempts;
-    if(loginAttempts>=5){
-      // lock for 30 seconds
-      loginLocked=true;
-      document.getElementById('loginMsg').textContent='🔒 محظور لـ 30 ثانية';
-      var t=30;
-      var lockTimer=setInterval(function(){
-        t--;
-        document.getElementById('loginMsg').textContent='🔒 محظور — '+t+'ث';
-        if(t<=0){
-          clearInterval(lockTimer);
-          loginLocked=false;loginAttempts=0;
-          document.getElementById('loginMsg').className='login-msg';
-          document.getElementById('loginMsg').textContent='أدخل الكود السري';
-          for(var i=0;i<4;i++){var d=document.getElementById('ld'+i);if(d)d.classList.remove('error-dot');}
-        }
-      },1000);
-    } else {
-      document.getElementById('loginMsg').textContent='❌ كود خاطئ — '+remaining+' محاولات متبقية';
-      setTimeout(function(){
-        for(var i=0;i<4;i++){var d=document.getElementById('ld'+i);if(d)d.classList.remove('error-dot');}
-        document.getElementById('loginMsg').className='login-msg';
-        document.getElementById('loginMsg').textContent='أدخل الكود السري';
-      },1200);
-    }
-  }
 }
 
 /* ── ROUTER ── */
@@ -2142,12 +1995,101 @@ function toggleCodes(){
 /* ══════════════════════════════
    PWA — SERVICE WORKER + INSTALL
 ══════════════════════════════ */
-// Register service worker
+// Inline Service Worker as blob
 if('serviceWorker' in navigator){
   window.addEventListener('load',function(){
-    navigator.serviceWorker.register('sw.js').then(function(reg){
-      console.log('SW registered');
-      // check for updates
+    var swCode=`// Coca-Cola Distributor — Service Worker
+var CACHE = 'coca-distrib-v3';
+var ASSETS = [
+  './',
+  './coca_cola_distributor%20(1).html',
+  './manifest.json',
+  'https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&display=swap',
+  'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+  'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'
+];
+
+// Install — cache assets
+self.addEventListener('install', function(e){
+  e.waitUntil(
+    caches.open(CACHE).then(function(cache){
+      // cache what we can, ignore failures for external resources
+      return Promise.allSettled(
+        ASSETS.map(function(url){
+          return cache.add(url).catch(function(){});
+        })
+      );
+    }).then(function(){
+      return self.skipWaiting();
+    })
+  );
+});
+
+// Activate — clean old caches
+self.addEventListener('activate', function(e){
+  e.waitUntil(
+    caches.keys().then(function(keys){
+      return Promise.all(
+        keys.filter(function(k){return k!==CACHE;})
+          .map(function(k){return caches.delete(k);})
+      );
+    }).then(function(){
+      return self.clients.claim();
+    })
+  );
+});
+
+// Fetch — network first, fallback to cache
+self.addEventListener('fetch', function(e){
+  // skip non-GET and Firebase requests (always need network)
+  if(e.request.method!=='GET') return;
+  if(e.request.url.includes('firestore.googleapis.com')) return;
+  if(e.request.url.includes('firebase')) return;
+  if(e.request.url.includes('maps.googleapis.com')) return;
+
+  e.respondWith(
+    fetch(e.request).then(function(response){
+      // cache successful responses
+      if(response&&response.status===200){
+        var clone=response.clone();
+        caches.open(CACHE).then(function(cache){
+          cache.put(e.request,clone);
+        });
+      }
+      return response;
+    }).catch(function(){
+      // offline fallback
+      return caches.match(e.request).then(function(cached){
+        if(cached) return cached;
+        // if HTML page not in cache — return main app
+        if(e.request.destination==='document'){
+          return caches.match('./coca_cola_distributor%20(1).html');
+        }
+      });
+    })
+  );
+});
+
+// Push notifications
+self.addEventListener('push', function(e){
+  var data = e.data ? e.data.json() : {};
+  e.waitUntil(
+    self.registration.showNotification(data.title||'Coca-Cola Distributor', {
+      body: data.body||'',
+      icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/192px-Coca-Cola_Logo.svg.png',
+      badge: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Coca-Cola_Logo.svg/72px-Coca-Cola_Logo.svg.png',
+      vibrate: [200, 100, 200],
+      dir: 'rtl',
+      lang: 'ar'
+    })
+  );
+});
+`;
+    var blob=new Blob([swCode],{type:'application/javascript'});
+    var swUrl=URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).then(function(reg){
+      console.log('SW registered (inline)');
       reg.addEventListener('updatefound',function(){
         var newWorker=reg.installing;
         newWorker.addEventListener('statechange',function(){
